@@ -1,0 +1,9 @@
+# Pilote Olfacode — frontend statique (PWA), aucun build nécessaire
+[build]
+  publish = "."
+
+# Sécurité : pas de cache agressif sur le service worker
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"

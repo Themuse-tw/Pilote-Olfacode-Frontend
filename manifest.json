@@ -1,0 +1,22 @@
+{
+  "name": "Pilote Olfacode — Assistant CEO",
+  "short_name": "Pilote",
+  "description": "Copilote d'exécution Olfacode : chat IA vocal, roadmap, budget, prospects, journal de décisions.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#faf7f2",
+  "theme_color": "#1a1614",
+  "categories": ["productivity", "business"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%231a1614'/%3E%3Ctext x='96' y='130' text-anchor='middle' font-family='Georgia,serif' font-style='italic' font-size='110' font-weight='500' fill='%23d4af37'%3EO%3C/text%3E%3C/svg%3E",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ]
+}

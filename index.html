@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1a1614">
+<title>Pilote Olfacode · Assistant CEO</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231a1614'/%3E%3Ctext x='50' y='62' text-anchor='middle' font-family='Georgia,serif' font-style='italic' font-size='50' fill='%23d4af37'%3EO%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ========== Sidebar ========== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <span class="brand-mark">O</span>
+      <span class="brand-text">Pilote Olfacode</span>
+    </div>
+    <nav class="nav">
+      <button class="nav-btn active" data-tab="chat">
+        <span class="nav-ico">💬</span><span class="nav-label">Assistant</span>
+      </button>
+      <button class="nav-btn" data-tab="roadmap">
+        <span class="nav-ico">🗺️</span><span class="nav-label">Roadmap</span>
+      </button>
+      <button class="nav-btn" data-tab="budget">
+        <span class="nav-ico">💰</span><span class="nav-label">Budget</span>
+      </button>
+      <button class="nav-btn" data-tab="prospects">
+        <span class="nav-ico">🎯</span><span class="nav-label">Prospects</span>
+      </button>
+      <button class="nav-btn" data-tab="journal">
+        <span class="nav-ico">📝</span><span class="nav-label">Journal</span>
+      </button>
+    </nav>
+    <button class="nav-btn settings-btn" data-tab="settings">
+      <span class="nav-ico">⚙️</span><span class="nav-label">Réglages</span>
+    </button>
+  </aside>
+
+  <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h16M3 11h16M3 17h16"/></svg>
+  </button>
+
+  <!-- ========== Main content ========== -->
+  <main class="main">
+
+    <!-- ===== Tab : Chat IA ===== -->
+    <section class="tab active" id="tab-chat">
+      <header class="tab-header">
+        <div>
+          <h1>Assistant Olfacode</h1>
+          <div class="muted">Brief, conseil, conversation. À voix ou à l'écrit.</div>
+        </div>
+        <div class="tab-actions">
+          <button class="btn-ghost" id="quickBrief" title="Brief du jour">🌅 Brief du jour</button>
+          <button class="btn-ghost" id="quickRecap" title="Bilan du soir">🌙 Bilan du soir</button>
+          <button class="btn-ghost" id="clearChat" title="Nouvelle conversation">↻ Nouvelle</button>
+        </div>
+      </header>
+
+      <div class="chat" id="chatMessages">
+        <div class="chat-empty">
+          <div class="chat-empty-ico">🎙️</div>
+          <h3>Bienvenue Tancia.</h3>
+          <p>Demande-moi ton brief du jour, un conseil sur un message LinkedIn, l'analyse d'un KPI, ou n'importe quelle question stratégique.</p>
+          <p class="muted">Tape ton message ci-dessous, ou clique sur 🎙 pour parler à voix.</p>
+        </div>
+      </div>
+
+      <form class="chat-form" id="chatForm">
+        <button type="button" class="mic-btn" id="micBtn" title="Parler" aria-label="Enregistrer un message vocal">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/><path d="M8 21h8"/>
+          </svg>
+        </button>
+        <textarea id="chatInput" placeholder="Tape ton message ou clique sur le micro…" rows="1"></textarea>
+        <label class="voice-toggle" title="Lire la réponse à voix haute">
+          <input type="checkbox" id="voiceOut">
+          <span>🔊 Voix</span>
+        </label>
+        <button type="submit" class="send-btn" id="sendBtn" title="Envoyer">↵</button>
+      </form>
+    </section>
+
+    <!-- ===== Tab : Roadmap ===== -->
+    <section class="tab" id="tab-roadmap">
+      <header class="tab-header">
+        <div>
+          <h1>Roadmap</h1>
+          <div class="muted">Tes priorités et tâches, organisées par trimestre.</div>
+        </div>
+        <div class="tab-actions">
+          <select id="roadmapFilter">
+            <option value="all">Tous les trimestres</option>
+            <option value="T2-2026">T2 2026 (avr-juin)</option>
+            <option value="T3-2026" selected>T3 2026 (juil-sept)</option>
+            <option value="T4-2026">T4 2026 (oct-déc)</option>
+            <option value="T1-2027">T1 2027 (jan-mar)</option>
+          </select>
+        </div>
+      </header>
+
+      <form class="task-add" id="taskAddForm">
+        <input type="text" id="taskTitle" placeholder="Nouvelle tâche…" required maxlength="200">
+        <select id="taskQuarter">
+          <option value="T2-2026">T2 2026</option>
+          <option value="T3-2026" selected>T3 2026</option>
+          <option value="T4-2026">T4 2026</option>
+          <option value="T1-2027">T1 2027</option>
+        </select>
+        <select id="taskPriority">
+          <option value="haute">🔴 Haute</option>
+          <option value="moyenne" selected>🟡 Moyenne</option>
+          <option value="basse">🟢 Basse</option>
+        </select>
+        <input type="date" id="taskDeadline">
+        <button type="submit" class="btn-dark">＋ Ajouter</button>
+      </form>
+
+      <div class="task-list" id="taskList">
+        <div class="empty">Aucune tâche. Ajoute-en une via le formulaire ci-dessus, ou demande à l'assistant de te suggérer la séquence pour les 90 prochains jours.</div>
+      </div>
+    </section>
+
+    <!-- ===== Tab : Budget ===== -->
+    <section class="tab" id="tab-budget">
+      <header class="tab-header">
+        <div>
+          <h1>Budget</h1>
+          <div class="muted">Trésorerie, revenus, dépenses récurrentes.</div>
+        </div>
+      </header>
+
+      <div class="budget-summary">
+        <div class="budget-kpi">
+          <div class="lbl">Trésorerie disponible</div>
+          <div class="val" id="kpiCash">— €</div>
+          <input type="number" step="0.01" id="cashInput" placeholder="Solde compte pro">
+        </div>
+        <div class="budget-kpi">
+          <div class="lbl">Revenus du mois</div>
+          <div class="val" id="kpiRevenue">— €</div>
+        </div>
+        <div class="budget-kpi">
+          <div class="lbl">Dépenses du mois</div>
+          <div class="val" id="kpiExpenses">— €</div>
+        </div>
+        <div class="budget-kpi">
+          <div class="lbl">Net du mois</div>
+          <div class="val" id="kpiNet">— €</div>
+        </div>
+      </div>
+
+      <div class="budget-grid">
+        <div class="budget-col">
+          <h3>📈 Revenus</h3>
+          <form class="entry-add" data-kind="revenue">
+            <input type="date" name="date" required>
+            <input type="text" name="label" placeholder="Description (ex: dépôt Pro client X)" required maxlength="120">
+            <input type="number" step="0.01" name="amount" placeholder="Montant €" required>
+            <button type="submit" class="btn-dark-sm">＋</button>
+          </form>
+          <div class="entries-list" id="revenuesList"></div>
+        </div>
+        <div class="budget-col">
+          <h3>📉 Dépenses</h3>
+          <form class="entry-add" data-kind="expense">
+            <input type="date" name="date" required>
+            <input type="text" name="label" placeholder="Description (ex: Render Pro, INPI marque)" required maxlength="120">
+            <input type="number" step="0.01" name="amount" placeholder="Montant €" required>
+            <label class="recur-toggle"><input type="checkbox" name="recurring"> récurrent</label>
+            <button type="submit" class="btn-dark-sm">＋</button>
+          </form>
+          <div class="entries-list" id="expensesList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Tab : Prospects ===== -->
+    <section class="tab" id="tab-prospects">
+      <header class="tab-header">
+        <div>
+          <h1>Prospects</h1>
+          <div class="muted">CRM léger · suivi de ton tuyau d'acquisition.</div>
+        </div>
+        <div class="tab-actions">
+          <button class="btn-ghost" id="pbSyncBtn" title="Récupérer les nouveaux profils enrichis depuis PhantomBuster">⟳ Sync PhantomBuster</button>
+          <select id="prospectFilter">
+            <option value="all">Tous</option>
+            <option value="a_contacter">À contacter</option>
+            <option value="contacte">Contacté</option>
+            <option value="repondu">A répondu</option>
+            <option value="rdv">RDV pris</option>
+            <option value="demo">Démo faite</option>
+            <option value="testeur">Testeur activé</option>
+            <option value="client">Client payant</option>
+            <option value="non">Pas intéressé</option>
+          </select>
+        </div>
+      </header>
+
+      <div class="prospect-kpis" id="prospectKpis"></div>
+
+      <form class="prospect-add" id="prospectAddForm">
+        <input type="text" name="name" placeholder="Nom complet" required maxlength="120">
+        <select name="persona">
+          <option value="parfumeur_indep">Parfumeur indépendant</option>
+          <option value="marque_niche">Marque de niche</option>
+          <option value="ecole">École / Formateur</option>
+          <option value="freelance">Freelance senior</option>
+          <option value="artisan_candle">Artisan candle / cosméto</option>
+        </select>
+        <input type="text" name="source" placeholder="Source (LinkedIn, IG, …)" maxlength="80">
+        <input type="email" name="email" placeholder="email@exemple.fr">
+        <input type="tel" name="phone" placeholder="Téléphone" maxlength="50">
+        <select name="status">
+          <option value="a_contacter" selected>À contacter</option>
+          <option value="contacte">Contacté</option>
+          <option value="repondu">A répondu</option>
+          <option value="rdv">RDV pris</option>
+          <option value="demo">Démo faite</option>
+          <option value="testeur">Testeur activé</option>
+          <option value="client">Client payant</option>
+          <option value="non">Pas intéressé</option>
+        </select>
+        <button type="submit" class="btn-dark">＋ Ajouter</button>
+      </form>
+
+      <div class="prospect-list" id="prospectList">
+        <div class="empty">Aucun prospect. Commence par scraper LinkedIn et alimenter cette liste.</div>
+      </div>
+    </section>
+
+    <!-- ===== Tab : Journal ===== -->
+    <section class="tab" id="tab-journal">
+      <header class="tab-header">
+        <div>
+          <h1>Journal de décisions</h1>
+          <div class="muted">Log des choix stratégiques. Lisible 3 mois plus tard.</div>
+        </div>
+      </header>
+
+      <form class="journal-add" id="journalAddForm">
+        <input type="date" name="date" required>
+        <input type="text" name="title" placeholder="Décision (ex: Activer Studio kit en septembre)" required maxlength="200">
+        <textarea name="reason" placeholder="Pourquoi cette décision ? (contexte, alternative écartée, conséquence attendue)" rows="3" required maxlength="800"></textarea>
+        <button type="submit" class="btn-dark">＋ Enregistrer</button>
+      </form>
+
+      <div class="journal-list" id="journalList">
+        <div class="empty">Aucune décision enregistrée. Le journal devient précieux quand tu as 3+ mois de recul.</div>
+      </div>
+    </section>
+
+    <!-- ===== Tab : Settings ===== -->
+    <section class="tab" id="tab-settings">
+      <header class="tab-header">
+        <div>
+          <h1>Réglages</h1>
+          <div class="muted">Configuration de l'assistant IA et de tes données.</div>
+        </div>
+      </header>
+
+      <div class="settings-card" style="border-color: var(--gold-deep); background: rgba(184,134,11,.04)">
+        <h3>☁ Backend cloud (recommandé)</h3>
+        <p class="muted">Synchronise tes données entre PC et téléphone, conserve un historique pérenne en base Postgres, et active la synchro automatique PhantomBuster. <strong>Sans backend, l'app reste fonctionnelle en mode 100% local (localStorage).</strong></p>
+        <div class="field-row" style="flex-direction:column; align-items:stretch; gap:6px">
+          <label class="muted small" style="margin-top:6px">URL du backend Render (ex: https://pilote-olfacode.onrender.com)</label>
+          <input type="url" id="backendUrl" placeholder="https://pilote-olfacode.onrender.com" autocomplete="off">
+          <label class="muted small" style="margin-top:6px">Clé d'authentification partagée (PILOTE_AUTH_KEY définie sur Render)</label>
+          <input type="password" id="backendAuth" placeholder="clé secrète longue..." autocomplete="off">
+        </div>
+        <div class="field-row" style="margin-top:10px">
+          <button class="btn-dark" id="backendSave">Connecter au backend</button>
+          <button class="btn-ghost" id="backendTest">Tester la connexion</button>
+          <button class="btn-ghost danger" id="backendDisconnect">Déconnecter (mode local)</button>
+        </div>
+        <div class="muted small" id="backendStatus" style="margin-top:8px"></div>
+      </div>
+
+      <div class="settings-card">
+        <h3>🔑 Clé API OpenAI <span class="muted small" style="font-weight:400">(mode local uniquement)</span></h3>
+        <p class="muted">Si tu utilises le backend cloud, la clé OpenAI est stockée côté serveur (plus sécurisé). Cette saisie est utilisée uniquement en mode local. Récupère ta clé sur <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com/api-keys</a>. <strong>Conseil :</strong> fixe une limite de dépense mensuelle (ex: 30 $) sur ton compte OpenAI.</p>
+        <div class="field-row">
+          <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off">
+          <button class="btn-dark" id="apiKeySave">Enregistrer</button>
+        </div>
+        <div class="muted small" id="apiKeyStatus"></div>
+      </div>
+
+      <div class="settings-card">
+        <h3>👻 PhantomBuster — agents à synchroniser <span class="muted small" style="font-weight:400">(nécessite backend)</span></h3>
+        <p class="muted">Liste les IDs de tes agents PhantomBuster (un par ligne). À chaque clic sur "⟳ Sync PhantomBuster" dans l'onglet Prospects, le backend récupère leurs derniers outputs et insère les nouveaux profils. La clé API PhantomBuster est sur Render (env var PHANTOMBUSTER_API_KEY).</p>
+        <p class="muted small">Où trouver un ID d'agent : <a href="https://phantombuster.com/dashboard" target="_blank" rel="noopener">phantombuster.com/dashboard</a> → clic sur ton agent → l'URL contient <code>/agents/&lt;ID&gt;</code></p>
+        <textarea id="pbAgentIds" rows="4" placeholder="1234567890123456&#10;9876543210987654" style="font-family:var(--mono); font-size:13px"></textarea>
+        <div class="field-row" style="margin-top:10px">
+          <button class="btn-dark" id="pbAgentsSave">Enregistrer la liste</button>
+          <a href="https://phantombuster.com/dashboard" target="_blank" rel="noopener" class="btn-ghost">Ouvrir PhantomBuster ↗</a>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <h3>🤖 Modèle IA</h3>
+        <div class="field-row">
+          <select id="modelChoice">
+            <option value="gpt-4o">gpt-4o (recommandé — qualité max)</option>
+            <option value="gpt-4o-mini">gpt-4o-mini (8x moins cher, qualité bonne)</option>
+            <option value="gpt-4.1">gpt-4.1 (raisonnement long)</option>
+          </select>
+        </div>
+        <p class="muted small">gpt-4o : 2,50$/1M tokens entrée · 10$/1M sortie. Pour un usage quotidien CEO, comptez ~5-15$/mois.</p>
+      </div>
+
+      <div class="settings-card">
+        <h3>🎙️ Voix de l'assistant</h3>
+        <div class="field-row">
+          <select id="voiceChoice">
+            <option value="alloy" selected>Alloy (neutre)</option>
+            <option value="echo">Echo (masculine)</option>
+            <option value="fable">Fable (chaleureuse)</option>
+            <option value="onyx">Onyx (grave)</option>
+            <option value="nova">Nova (féminine claire)</option>
+            <option value="shimmer">Shimmer (douce)</option>
+          </select>
+          <button class="btn-ghost" id="voiceTest">Tester</button>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <h3>🧠 Mémoire & instructions de l'assistant</h3>
+        <p class="muted">Le contexte Olfacode que l'assistant a en permanence. Personnalisable.</p>
+        <textarea id="systemPrompt" rows="12"></textarea>
+        <div class="field-row" style="margin-top:10px">
+          <button class="btn-dark" id="systemPromptSave">Enregistrer</button>
+          <button class="btn-ghost" id="systemPromptReset">Réinitialiser au défaut</button>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <h3>💾 Données — export / import / reset</h3>
+        <p class="muted">Tes données sont stockées localement (localStorage). Sauvegarde-les régulièrement.</p>
+        <div class="field-row" style="gap:10px; flex-wrap:wrap">
+          <button class="btn-dark" id="exportData">⬇ Exporter (JSON)</button>
+          <button class="btn-ghost" id="importDataBtn">⬆ Importer</button>
+          <input type="file" id="importFile" accept="application/json" hidden>
+          <button class="btn-ghost danger" id="resetData">⚠ Effacer tout</button>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <h3>ℹ À propos</h3>
+        <p class="muted small">Pilote Olfacode v1.0 · CEO Copilot · 100% client-side, données locales, API OpenAI.<br>
+        Construit pour <strong>Tancia Wamenya Sengo</strong> · SIRET 939 575 213 00011.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Toast notifications -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Modal édition (réutilisable) -->
+<div class="modal" id="editModal" hidden>
+  <div class="modal-bg" data-modal-close></div>
+  <div class="modal-box">
+    <button class="modal-close" data-modal-close aria-label="Fermer">×</button>
+    <div class="modal-content" id="editModalContent"></div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
