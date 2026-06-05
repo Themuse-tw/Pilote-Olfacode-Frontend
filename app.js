@@ -129,7 +129,7 @@ async function loadStateBackend() {
   state.prospects = (d.prospects || []).map(p => ({
     id: p.id, name: p.name, persona: p.persona, source: p.source, email: p.email, phone: p.phone,
     status: p.status, notes: p.notes, linkedin_url: p.linkedin_url, enrichment: p.enrichment,
-    created_at: p.created_at, updated_at: p.updated_at
+    contacted_at: p.contacted_at, created_at: p.created_at, updated_at: p.updated_at
   }));
   state.journal = d.journal || [];
 }
@@ -833,13 +833,20 @@ function renderProspects() {
       </div>
       <div class="persona">${esc(PERSONA_LABEL[p.persona] || p.persona)}</div>
       <div class="source">${esc(p.source || '')}</div>
-      <div><span class="prospect-status ${esc(p.status)}">${esc(STATUS_LABEL[p.status] || p.status)}</span></div>
+      <div>
+        <span class="prospect-status ${esc(p.status)}">${esc(STATUS_LABEL[p.status] || p.status)}</span>
+        ${p.contacted_at ? `<div class="muted small">Contacté le ${new Date(p.contacted_at).toLocaleDateString('fr-FR')}</div>` : ''}
+      </div>
       <div class="prospect-actions">
+        ${p.email ? `<button class="btn-dark btn-pitch" data-pitch-prospect="${p.id}" title="Générer et envoyer un pitch IA">✉ Préparer le pitch</button>` : ''}
         <button class="icon-btn" data-edit-prospect="${p.id}" title="Modifier">✏</button>
         <button class="icon-btn" data-del-prospect="${p.id}" title="Supprimer">🗑</button>
       </div>
     </div>
   `).join('');
+  $$('[data-pitch-prospect]').forEach(el => {
+    el.addEventListener('click', () => openPitchModal(el.dataset.pitchProspect));
+  });
   $$('[data-del-prospect]').forEach(el => {
     el.addEventListener('click', async () => {
       if (!confirmAction('Supprimer ce prospect ?')) return;
@@ -887,6 +894,67 @@ function openProspectEdit(id) {
     saveState(); renderProspects(); closeModal();
     await syncProspectBackend(p, 'update');
     toast('Prospect mis à jour', 'success');
+  });
+}
+
+async function openPitchModal(id) {
+  const p = state.prospects.find(x => x.id === id);
+  if (!p) return;
+  if (!USE_BACKEND()) { toast('Connecte le backend (Réglages) pour générer un pitch', 'error'); return; }
+  if (!p.email) { toast('Ce prospect n\'a pas d\'e-mail', 'error'); return; }
+
+  // 1) État de chargement pendant la génération IA
+  $('#editModalContent').innerHTML = `
+    <h3>Pitch pour ${esc(p.name)}</h3>
+    <p class="muted">✨ Génération du mail par l'IA…</p>`;
+  openModal();
+
+  let pitch;
+  try {
+    pitch = await api('/api/prospects/' + encodeURIComponent(id) + '/pitch', { method: 'POST' });
+  } catch (e) {
+    $('#editModalContent').innerHTML = `<h3>Pitch pour ${esc(p.name)}</h3>
+      <p class="muted">❌ Génération échouée : ${esc(e.message)}</p>
+      <div class="form-actions"><button type="button" class="btn-ghost" data-modal-close>Fermer</button></div>`;
+    return;
+  }
+
+  // 2) Relecture / édition avant envoi
+  $('#editModalContent').innerHTML = `
+    <h3>Pitch pour ${esc(p.name)}</h3>
+    <p class="muted small">Destinataire : ${esc(p.email)} · relis et ajuste avant d'envoyer.</p>
+    <form id="pitchForm">
+      <div class="form-row"><label>Objet</label><input type="text" name="subject" maxlength="200" required value="${esc(pitch.subject || '')}"></div>
+      <div class="form-row"><label>Message</label><textarea name="body" rows="12" maxlength="4000" required>${esc(pitch.body || '')}</textarea></div>
+      <div class="form-actions">
+        <button type="button" class="btn-ghost" data-modal-close>Annuler</button>
+        <button type="submit" class="btn-dark">✉ Envoyer via Resend</button>
+      </div>
+    </form>`;
+
+  $('#pitchForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const subject = fd.get('subject').toString().trim();
+    const body = fd.get('body').toString().trim();
+    if (!subject || !body) { toast('Objet et message requis', 'error'); return; }
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true; btn.textContent = 'Envoi…';
+    try {
+      const r = await api('/api/prospects/' + encodeURIComponent(id) + '/send', {
+        method: 'POST', body: JSON.stringify({ subject, body })
+      });
+      // Statut → Contacté + date, en local
+      p.status = 'contacte';
+      p.contacted_at = r.contacted_at ? new Date(r.contacted_at).getTime() : Date.now();
+      saveState();
+      renderProspects();
+      closeModal();
+      toast('✓ Mail envoyé à ' + p.name + ' · statut « Contacté »', 'success');
+    } catch (err) {
+      btn.disabled = false; btn.textContent = '✉ Envoyer via Resend';
+      toast('Envoi échoué : ' + err.message, 'error');
+    }
   });
 }
 
