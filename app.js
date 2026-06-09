@@ -250,6 +250,7 @@ function bindTabs() {
       if (tab === 'roadmap') renderTasks();
       if (tab === 'budget') renderBudget();
       if (tab === 'prospects') renderProspects();
+      if (tab === 'contenu') renderContent();
       if (tab === 'journal') renderJournal();
       if (tab === 'settings') renderSettings();
     });
@@ -1066,6 +1067,70 @@ function bindJournal() {
 /* ============================================================
    11. Tab : Settings
    ============================================================ */
+async function renderContent() {
+  const list = $('#contentList');
+  if (!USE_BACKEND()) { list.innerHTML = '<div class="empty">Connecte le backend (Réglages) pour la veille de contenu.</div>'; return; }
+  list.innerHTML = '<div class="muted">Chargement…</div>';
+  let arts = [];
+  try { arts = (await api('/api/articles')).articles || []; }
+  catch (e) { list.innerHTML = '<div class="empty">Erreur : ' + esc(e.message) + '</div>'; return; }
+  const LBL = { draft: 'Brouillon', approved: 'Validé', published: 'Publié' };
+  const header = `
+    <div style="display:flex; gap:10px; align-items:center; margin-bottom:14px">
+      <button class="btn-dark" id="harvestBtn">🌾 Lancer la veille</button>
+      <span class="muted small">${arts.length} article(s)</span>
+    </div>`;
+  const body = arts.length ? arts.map(a => `
+    <div class="prospect">
+      <div>
+        <div class="name">${esc(a.title)}</div>
+        <div class="source small">${esc(LBL[a.status] || a.status)} · ${esc(a.source || '')}${a.source_url ? ` · <a href="${esc(a.source_url)}" target="_blank" rel="noopener">source</a>` : ''}</div>
+      </div>
+      <div class="prospect-actions">
+        <button class="btn-dark" data-read-article="${a.id}">📖 Lire / 🔊 Écouter</button>
+        ${a.status === 'draft' ? `<button class="icon-btn" data-approve-article="${a.id}" title="Valider (file de publication)">✔</button>` : ''}
+        ${a.status === 'approved' ? `<button class="icon-btn" data-publish-article="${a.id}" title="Publier maintenant">🚀</button>` : ''}
+      </div>
+    </div>`).join('') : '<div class="empty">Aucun article. Clique « Lancer la veille » pour générer des brouillons.</div>';
+  list.innerHTML = header + body;
+
+  $('#harvestBtn').addEventListener('click', async (e) => {
+    const b = e.currentTarget; b.disabled = true; b.textContent = '🌾 Veille en cours…';
+    try { const r = await api('/api/content/harvest', { method: 'POST' }); toast(r.message || 'Veille terminée', 'success'); }
+    catch (err) { toast('Veille : ' + err.message, 'error'); }
+    renderContent();
+  });
+  $$('[data-read-article]').forEach(el => el.addEventListener('click', () => openArticle(el.dataset.readArticle)));
+  $$('[data-approve-article]').forEach(el => el.addEventListener('click', async () => {
+    try { await api('/api/articles/' + encodeURIComponent(el.dataset.approveArticle), { method: 'PATCH', body: JSON.stringify({ status: 'approved' }) }); toast('Article validé ✔ · en file de publication', 'success'); renderContent(); }
+    catch (e) { toast('Erreur : ' + e.message, 'error'); }
+  }));
+  $$('[data-publish-article]').forEach(el => el.addEventListener('click', async () => {
+    try { await api('/api/articles/' + encodeURIComponent(el.dataset.publishArticle), { method: 'PATCH', body: JSON.stringify({ status: 'published' }) }); toast('Article publié 🚀', 'success'); renderContent(); }
+    catch (e) { toast('Erreur : ' + e.message, 'error'); }
+  }));
+}
+
+async function openArticle(id) {
+  let a;
+  try { a = (await api('/api/articles/' + encodeURIComponent(id))).article; }
+  catch (e) { toast('Erreur : ' + e.message, 'error'); return; }
+  $('#editModalContent').innerHTML = `
+    <h3>${esc(a.title)}</h3>
+    <div class="form-actions" style="justify-content:flex-start; gap:8px; margin-bottom:10px">
+      <button type="button" class="btn-dark" id="articleListen">🔊 Écouter</button>
+      <button type="button" class="btn-ghost" data-modal-close>Fermer</button>
+    </div>
+    <div class="article-body" style="max-height:60vh; overflow:auto">${renderMarkdown(a.content_md || '')}</div>`;
+  openModal();
+  $('#articleListen').addEventListener('click', async (e) => {
+    const b = e.currentTarget; b.disabled = true; b.textContent = '🔊 Lecture…';
+    try { await speakText((a.title + '. ' + (a.content_md || '')).replace(/[#*_`>]/g, ' ')); }
+    catch (err) { toast('Audio indisponible : ' + err.message, 'error'); }
+    b.disabled = false; b.textContent = '🔊 Écouter';
+  });
+}
+
 function renderSettings() {
   $('#backendUrl').value = BACKEND_URL;
   $('#backendAuth').value = BACKEND_AUTH;
