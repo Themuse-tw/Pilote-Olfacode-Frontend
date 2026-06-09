@@ -457,7 +457,7 @@ async function speakText(text) {
       headers: { Authorization: 'Bearer ' + BACKEND_AUTH, 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: input, voice: state.settings.voice || 'alloy' })
     });
-    if (!r.ok) throw new Error('TTS HTTP ' + r.status);
+    if (!r.ok) { let d = ''; try { d = (await r.json()).details || ''; } catch {} throw new Error('TTS ' + r.status + (d ? ' · ' + d : '')); }
     const blob = await r.blob();
     const u = URL.createObjectURL(blob);
     await new Audio(u).play();
