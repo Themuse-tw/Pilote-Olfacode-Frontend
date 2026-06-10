@@ -1158,9 +1158,12 @@ async function toggleArticleAudio(text, btn) {
     const blob = await r.blob();
     articleAudio = new Audio(URL.createObjectURL(blob));
     articleAudio.onended = function () { articleAudio = null; btn.textContent = '🔊 Écouter'; };
-    await articleAudio.play();
     btn.textContent = '⏹ Arrêter';
-  } catch (err) { stopArticleAudio(); toast('Audio indisponible : ' + err.message, 'error'); btn.textContent = '🔊 Écouter'; }
+    await articleAudio.play();
+  } catch (err) {
+    if (err && err.name === 'AbortError') { btn.disabled = false; return; } // lecture interrompue : bénin
+    stopArticleAudio(); toast('Audio indisponible : ' + err.message, 'error'); btn.textContent = '🔊 Écouter';
+  }
   btn.disabled = false;
 }
 

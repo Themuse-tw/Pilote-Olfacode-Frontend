@@ -1,6 +1,6 @@
 /* Pilote Olfacode — Service Worker minimal pour PWA installable */
 
-const CACHE = 'pilote-olfacode-v4';
+const CACHE = 'pilote-olfacode-v5';
 const ASSETS = [
   './',
   './index.html',
@@ -27,13 +27,16 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
-  // Ne JAMAIS cacher les appels API OpenAI (privés, dynamiques)
-  if (url.hostname.includes('openai.com')) return;
-  // Network-first pour les assets de l'app
+  // On n'intercepte QUE les GET de MÊME ORIGINE (les assets de l'app).
+  // Les requêtes API (POST) et tout ce qui est cross-origin (backend Render,
+  // OpenAI, etc.) passent DIRECTEMENT au réseau — sinon le SW peut avorter
+  // un POST cross-origin (ex : l'audio TTS) → "operation aborted".
+  if (e.request.method !== 'GET' || url.origin !== self.location.origin) return;
+  // Network-first pour les assets de l'app, repli sur le cache hors-ligne.
   e.respondWith(
     fetch(e.request)
       .then(r => {
-        if (r.ok && e.request.method === 'GET' && url.origin === self.location.origin) {
+        if (r.ok) {
           const copy = r.clone();
           caches.open(CACHE).then(c => c.put(e.request, copy));
         }
