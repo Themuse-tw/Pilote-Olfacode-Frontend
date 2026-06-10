@@ -1096,6 +1096,7 @@ async function renderContent() {
         <button class="btn-dark" data-read-article="${a.id}">📖 Lire / 🔊 Écouter</button>
         ${a.status === 'draft' ? `<button class="btn-dark" data-approve-article="${a.id}">✔ Valider</button>` : ''}
         ${a.status === 'approved' ? `<button class="btn-dark" data-publish-article="${a.id}">🚀 Publier</button>` : ''}
+        <button class="icon-btn" data-del-article="${a.id}" title="Supprimer">🗑</button>
       </div>
     </div>`).join('') : '<div class="empty">Aucun article. Clique « Lancer la veille » pour générer des brouillons.</div>';
   list.innerHTML = header + body;
@@ -1113,6 +1114,11 @@ async function renderContent() {
   }));
   $$('[data-publish-article]').forEach(el => el.addEventListener('click', async () => {
     try { await api('/api/articles/' + encodeURIComponent(el.dataset.publishArticle), { method: 'PATCH', body: JSON.stringify({ status: 'published' }) }); toast('Article publié 🚀', 'success'); renderContent(); }
+    catch (e) { toast('Erreur : ' + e.message, 'error'); }
+  }));
+  $$('[data-del-article]').forEach(el => el.addEventListener('click', async () => {
+    if (!confirmAction('Supprimer définitivement cet article ?')) return;
+    try { await api('/api/articles/' + encodeURIComponent(el.dataset.delArticle), { method: 'DELETE' }); toast('Article supprimé', 'success'); renderContent(); }
     catch (e) { toast('Erreur : ' + e.message, 'error'); }
   }));
 }
