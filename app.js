@@ -242,6 +242,7 @@ function bindTabs() {
   $$('.nav-btn[data-tab]').forEach(btn => {
     btn.addEventListener('click', () => {
       const tab = btn.dataset.tab;
+      try { localStorage.setItem('pilote.tab', tab); } catch (e) {}
       $$('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
       $$('.tab').forEach(s => s.classList.toggle('active', s.id === 'tab-' + tab));
       // close mobile sidebar
@@ -255,6 +256,11 @@ function bindTabs() {
       if (tab === 'settings') renderSettings();
     });
   });
+  // Conserve le dernier onglet ouvert au rafraîchissement de la page.
+  try {
+    const saved = localStorage.getItem('pilote.tab');
+    if (saved) { const b = $(`.nav-btn[data-tab="${saved}"]`); if (b) b.click(); }
+  } catch (e) {}
   $('#sidebarToggle').addEventListener('click', () => {
     $('#sidebar').classList.toggle('open');
   });
@@ -1112,6 +1118,7 @@ async function renderContent() {
 }
 
 async function openArticle(id) {
+  stopArticleAudio(); // coupe l'audio d'un article précédent
   let a;
   try { a = (await api('/api/articles/' + encodeURIComponent(id))).article; }
   catch (e) { toast('Erreur : ' + e.message, 'error'); return; }
@@ -1123,12 +1130,32 @@ async function openArticle(id) {
     </div>
     <div class="article-body" style="max-height:60vh; overflow:auto">${renderMarkdown(a.content_md || '')}</div>`;
   openModal();
-  $('#articleListen').addEventListener('click', async (e) => {
-    const b = e.currentTarget; b.disabled = true; b.textContent = '🔊 Lecture…';
-    try { await speakText((a.title + '. ' + (a.content_md || '')).replace(/[#*_`>]/g, ' ')); }
-    catch (err) { toast('Audio indisponible : ' + err.message, 'error'); }
-    b.disabled = false; b.textContent = '🔊 Écouter';
+  $('#articleListen').addEventListener('click', function (e) {
+    toggleArticleAudio((a.title + '. ' + (a.content_md || '')).replace(/[#*_`>]/g, ' '), e.currentTarget);
   });
+}
+
+var articleAudio = null;
+function stopArticleAudio() { if (articleAudio) { try { articleAudio.pause(); } catch (e) {} articleAudio = null; } }
+async function toggleArticleAudio(text, btn) {
+  if (articleAudio) { stopArticleAudio(); btn.textContent = '🔊 Écouter'; return; }   // déjà en lecture → on arrête
+  if (!USE_BACKEND()) { toast('Connecte le backend pour l\'audio', 'error'); return; }
+  btn.disabled = true; btn.textContent = '⏳ Chargement…';
+  try {
+    const url = BACKEND_URL.replace(/\/$/, '') + '/api/voice/speak';
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + BACKEND_AUTH, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: String(text).slice(0, 4000), voice: state.settings.voice || 'alloy' })
+    });
+    if (!r.ok) { let d = ''; try { d = (await r.json()).details || ''; } catch (e) {} throw new Error('TTS ' + r.status + (d ? ' · ' + d : '')); }
+    const blob = await r.blob();
+    articleAudio = new Audio(URL.createObjectURL(blob));
+    articleAudio.onended = function () { articleAudio = null; btn.textContent = '🔊 Écouter'; };
+    await articleAudio.play();
+    btn.textContent = '⏹ Arrêter';
+  } catch (err) { stopArticleAudio(); toast('Audio indisponible : ' + err.message, 'error'); btn.textContent = '🔊 Écouter'; }
+  btn.disabled = false;
 }
 
 function renderSettings() {
