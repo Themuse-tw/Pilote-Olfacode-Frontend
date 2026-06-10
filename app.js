@@ -1088,8 +1088,8 @@ async function renderContent() {
       </div>
       <div class="prospect-actions">
         <button class="btn-dark" data-read-article="${a.id}">📖 Lire / 🔊 Écouter</button>
-        ${a.status === 'draft' ? `<button class="icon-btn" data-approve-article="${a.id}" title="Valider (file de publication)">✔</button>` : ''}
-        ${a.status === 'approved' ? `<button class="icon-btn" data-publish-article="${a.id}" title="Publier maintenant">🚀</button>` : ''}
+        ${a.status === 'draft' ? `<button class="btn-dark" data-approve-article="${a.id}">✔ Valider</button>` : ''}
+        ${a.status === 'approved' ? `<button class="btn-dark" data-publish-article="${a.id}">🚀 Publier</button>` : ''}
       </div>
     </div>`).join('') : '<div class="empty">Aucun article. Clique « Lancer la veille » pour générer des brouillons.</div>';
   list.innerHTML = header + body;
