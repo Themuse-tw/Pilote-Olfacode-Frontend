@@ -1,6 +1,6 @@
 /* Pilote Olfacode — Service Worker minimal pour PWA installable */
 
-const CACHE = 'pilote-olfacode-v1';
+const CACHE = 'pilote-olfacode-v2';
 const ASSETS = [
   './',
   './index.html',
